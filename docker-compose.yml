@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  drift-detector:
+    build: .
+    container_name: config-drift-detector
+    ports:
+      - "8000:8000"
+    volumes:
+      # Montar manifests k8s
+      - ./k8s:/app/k8s:ro
+      # Montar kubeconfig para acceder al cluster
+      - ~/.kube:/root/.kube:ro
+      # Directorio para evidencias
+      - ./evidence:/evidence
+    environment:
+      - KUBECONFIG=/root/.kube/config
+    restart: unless-stopped
+    networks:
+      - drift-network
+
+networks:
+  drift-network:
+    driver: bridge

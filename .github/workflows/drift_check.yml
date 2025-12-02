@@ -1,0 +1,95 @@
+name: Drift Check Pipeline
+
+on:
+  workflow_dispatch:  # Ejecutar manualmente bajo demanda
+  schedule:
+    - cron: '0 */6 * * *'  # Cada 6 horas (opcional)
+
+jobs:
+  check-drift:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    # Nota: Necesitas configurar KUBECONFIG como secret en GitHub
+    - name: Configure kubectl
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+        kubectl cluster-info || echo "Warning: Could not connect to cluster"
+    
+    - name: Check desired state
+      run: |
+        python app/scripts/collect_desired_state.py
+    
+    - name: Check actual state
+      run: |
+        python app/scripts/collect_actual_state.py
+    
+    - name: Generate drift report
+      run: |
+        mkdir -p evidence
+        python -c "
+from app.scripts.collect_desired_state import get_desired_state
+from app.scripts.collect_actual_state import get_actual_state
+from app.scripts.compare_states import compare_states
+import json
+from datetime import datetime
+
+desired = get_desired_state('./k8s')
+actual = get_actual_state()
+diffs = compare_states(desired, actual)
+
+report = {
+    'timestamp': datetime.utcnow().isoformat(),
+    'has_drift': len(diffs) > 0,
+    'drift_count': len(diffs),
+    'differences': diffs
+}
+
+with open('evidence/drift-report.json', 'w') as f:
+    json.dump(report, f, indent=2)
+
+print(f'Drift check complete: {len(diffs)} differences found')
+        "
+    
+    - name: Upload drift report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: drift-report
+        path: evidence/
+    
+    - name: Fail if critical drift detected
+      run: |
+        python -c "
+import json
+
+with open('evidence/drift-report.json', 'r') as f:
+    report = json.load(f)
+
+critical_drifts = [
+    d for d in report['differences'] 
+    if d.get('severity') == 'CRITICAL' or d.get('type') == 'MISSING'
+]
+
+if critical_drifts:
+    print(f'❌ Critical drift detected: {len(critical_drifts)} critical issues')
+    for drift in critical_drifts:
+        print(f'  - {drift}')
+    exit(1)
+else:
+    print('✅ No critical drift detected')
+        "

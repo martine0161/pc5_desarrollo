@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: default
+  labels:
+    app: nginx
+data:
+  database.url: "postgres://db:5432/myapp"
+  feature.flags: "feature-a:enabled,feature-b:disabled"
+  log.level: "info"
