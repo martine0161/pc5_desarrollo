@@ -25,7 +25,8 @@ env/
 *.swp
 
 # Evidence and reports
-evidence/
+# IMPORTANTE: .evidence/ NO debe estar aquí - debe estar versionada
+evidence/  # Esta carpeta vieja SÍ se ignora
 *.log
 
 # OS
