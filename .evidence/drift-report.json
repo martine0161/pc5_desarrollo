@@ -1,0 +1,8 @@
+{
+  "timestamp": "2024-12-02T12:00:00.000000",
+  "sprint": "Sprint 1 - Initial setup",
+  "has_drift": false,
+  "drift_count": 0,
+  "differences": [],
+  "note": "Este es el reporte inicial. Los drifts se detectarán cuando el pipeline drift_check.yml se ejecute con un cluster real."
+}

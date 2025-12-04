@@ -11,8 +11,8 @@ services:
       - ./k8s:/app/k8s:ro
       # Montar kubeconfig para acceder al cluster
       - ~/.kube:/root/.kube:ro
-      # Directorio para evidencias
-      - ./evidence:/evidence
+      # Directorio para evidencias DevSecOps
+      - ./.evidence:/app/.evidence
     environment:
       - KUBECONFIG=/root/.kube/config
     restart: unless-stopped

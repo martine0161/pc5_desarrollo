@@ -7,7 +7,7 @@ on:
 
 jobs:
   check-drift:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # Requiere self-hosted para acceso a kubectl y Docker local
     
     steps:
     - name: Checkout code
@@ -40,7 +40,7 @@ jobs:
     
     - name: Generate drift report
       run: |
-        mkdir -p evidence
+        mkdir -p .evidence
         python -c "
 from app.scripts.collect_desired_state import get_desired_state
 from app.scripts.collect_actual_state import get_actual_state
@@ -59,7 +59,7 @@ report = {
     'differences': diffs
 }
 
-with open('evidence/drift-report.json', 'w') as f:
+with open('.evidence/drift-report.json', 'w') as f:
     json.dump(report, f, indent=2)
 
 print(f'Drift check complete: {len(diffs)} differences found')
@@ -70,14 +70,14 @@ print(f'Drift check complete: {len(diffs)} differences found')
       if: always()
       with:
         name: drift-report
-        path: evidence/
+        path: .evidence/
     
     - name: Fail if critical drift detected
       run: |
         python -c "
 import json
 
-with open('evidence/drift-report.json', 'r') as f:
+with open('.evidence/drift-report.json', 'r') as f:
     report = json.load(f)
 
 critical_drifts = [

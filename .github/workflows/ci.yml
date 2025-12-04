@@ -35,15 +35,20 @@ jobs:
     
     - name: Run tests with pytest
       run: |
-        pytest tests/ -v --cov=app --cov-report=term --cov-report=html
+        mkdir -p .evidence
+        pytest tests/ -v --cov=app --cov-report=term --cov-report=html --cov-report=json 2>&1 | tee .evidence/ci-report.txt
+        # Copiar coverage.json a .evidence/
+        cp coverage.json .evidence/coverage.json || true
     
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
       if: always()
       with:
         name: coverage-report
-        path: htmlcov/
+        path: |
+          htmlcov/
+          .evidence/
     
     - name: Check test coverage
       run: |
-        coverage report --fail-under=70
+        coverage report --fail-under=70 | tee -a .evidence/ci-report.txt

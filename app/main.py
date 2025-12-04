@@ -93,7 +93,7 @@ def get_drift_report():
             "has_drift": drift_data["has_drift"],
             "summary": stats,
             "details": differences,
-            "evidence_file": "/evidence/drift-report.json"
+            "evidence_file": "/.evidence/drift-report.json"
         }
     except Exception as e:
         raise HTTPException(

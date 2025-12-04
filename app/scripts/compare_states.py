@@ -17,15 +17,18 @@ def compare_states(desired: Dict[str, List[Dict]], actual: Dict[str, List[Dict]]
     """
     differences = []
     
+    # Tipos de recursos a comparar (incluye NetworkPolicy)
+    resource_types = ['Deployment', 'Service', 'ConfigMap', 'Secret', 'Ingress', 'NetworkPolicy']
+    
     # Comparar cada tipo de recurso
-    for resource_type in desired.keys():
+    for resource_type in resource_types:
         desired_resources = {
             f"{r['namespace']}/{r['name']}": r 
-            for r in desired[resource_type]
+            for r in desired.get(resource_type, [])
         }
         actual_resources = {
             f"{r['namespace']}/{r['name']}": r 
-            for r in actual[resource_type]
+            for r in actual.get(resource_type, [])
         }
         
         # 1. Recursos en manifests pero no en cluster (missing)
@@ -125,8 +128,27 @@ def compare_resource_details(resource_type: str, desired: Dict, actual: Dict) ->
         if desired_security and not actual_security:
             drifts.append({
                 "field": "securityContext",
-                "message": "SecurityContext defined in manifest but missing in cluster"
+                "message": "SecurityContext defined in manifest but missing in cluster",
+                "severity": "CRITICAL"
             })
+    
+    # Comparar NetworkPolicy (Sprint 3 - requisito crítico)
+    # Si es un Deployment/Pod, verificar que exista al menos una NetworkPolicy asociada
+    if resource_type == "Deployment":
+        # Verificar si el manifest esperaba NetworkPolicy
+        expected_network_policy = desired.get('metadata', {}).get('annotations', {}).get('requires-network-policy', 'false')
+        
+        if expected_network_policy == 'true':
+            # Verificar si existe NetworkPolicy en el cluster
+            has_network_policy = actual.get('metadata', {}).get('annotations', {}).get('has-network-policy', 'false')
+            
+            if has_network_policy != 'true':
+                drifts.append({
+                    "field": "networkPolicy",
+                    "message": "NetworkPolicy required but missing in cluster",
+                    "severity": "CRITICAL",
+                    "recommendation": "Deploy NetworkPolicy to secure pod-to-pod communication"
+                })
     
     return drifts
 

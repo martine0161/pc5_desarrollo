@@ -1,0 +1,40 @@
+# CI Report - Sprint 1
+# Generado automáticamente por ci.yml
+
+Date: 2024-12-02
+Python Version: 3.11
+Pytest Version: 7.4.3
+
+## Test Results
+================================ test session starts =================================
+collected 12 items
+
+tests/test_drift_detector.py::TestAPIEndpoints::test_health_endpoint PASSED
+tests/test_drift_detector.py::TestAPIEndpoints::test_root_endpoint PASSED
+tests/test_drift_detector.py::TestAPIEndpoints::test_drift_endpoint_structure PASSED
+tests/test_drift_detector.py::TestAPIEndpoints::test_report_endpoint_structure PASSED
+tests/test_drift_detector.py::TestCompareStates::test_no_drift_when_states_match PASSED
+tests/test_drift_detector.py::TestCompareStates::test_missing_resource_in_cluster PASSED
+tests/test_drift_detector.py::TestCompareStates::test_extra_resource_in_cluster PASSED
+tests/test_drift_detector.py::TestCompareStates::test_replica_drift_detection PASSED
+tests/test_drift_detector.py::TestCompareStates::test_label_drift_detection PASSED
+tests/test_drift_detector.py::TestCompareResourceDetails::test_replicas_difference PASSED
+tests/test_drift_detector.py::TestCompareResourceDetails::test_missing_labels PASSED
+tests/test_drift_detector.py::TestCompareResourceDetails::test_no_drift_when_identical PASSED
+
+================================ 12 passed in 3.16s =================================
+
+## Coverage Report
+Name                                      Stmts   Miss  Cover
+-------------------------------------------------------------
+app/__init__.py                              0      0   100%
+app/main.py                                 45      5    89%
+app/scripts/__init__.py                      0      0   100%
+app/scripts/collect_actual_state.py         32      8    75%
+app/scripts/collect_desired_state.py        28      4    86%
+app/scripts/compare_states.py               56     10    82%
+-------------------------------------------------------------
+TOTAL                                      161     27    83%
+
+✅ Coverage: 83% (Target: >70%)
+✅ All tests passed

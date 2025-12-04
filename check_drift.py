@@ -45,7 +45,7 @@ def main():
             print(f"\n{i}. {diff['type']} - {diff['resource_type']}/{diff['name']}")
     
     # 5. Guardar reporte
-    Path("evidence").mkdir(exist_ok=True)
+    Path(".evidence").mkdir(exist_ok=True)
     report = {
         "timestamp": datetime.utcnow().isoformat(),
         "has_drift": len(differences) > 0,
@@ -53,10 +53,10 @@ def main():
         "differences": differences
     }
     
-    with open("evidence/drift-report.json", "w") as f:
+    with open(".evidence/drift-report.json", "w") as f:
         json.dump(report, f, indent=2)
     
-    print(f"\n📄 Report saved to: evidence/drift-report.json")
+    print(f"\n📄 Report saved to: .evidence/drift-report.json")
     return 0
 
 if __name__ == "__main__":
